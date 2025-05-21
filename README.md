@@ -1,43 +1,20 @@
-import re
-import argparse
+1. Introduction
+This tool parses and analyzes security logs (such as Apache logs) to detect suspicious activity, like repeated 404 errors or access to sensitive pages (e.g., /admin, /login). It’s a simple Python-based project aimed at enhancing log monitoring and analysis, ideal for inclusion in a cybersecurity portfolio.
 
-def analyze_log(file_path):
-    suspicious_ips = {}
-    sensitive_areas = ['/admin', '/login', '/wp-admin', '/phpmyadmin', '/config']
-    
-    try:
-        with open(file_path, 'r') as log:
-            lines = log.readlines()
-    except FileNotFoundError:
-        print(f"[!] Log file not found: {file_path}")
-        return
+2. Prerequisites
+Python 3.x installed.
 
-    # Parse each log line
-    for line in lines:
-        match = re.search(r'(\d+\.\d+\.\d+\.\d+).+"GET (.+?) HTTP.+?" (\d+)', line)
-        if match:
-            ip, url, status = match.groups()
+Access to Apache access logs or similar log files.
 
-            if ip not in suspicious_ips:
-                suspicious_ips[ip] = {'404': 0, 'sensitive': 0}
+3. Installation
+Install Python 3.x:
+If you haven't installed Python, you can do so by running the following command:
 
-            if status == '404':
-                suspicious_ips[ip]['404'] += 1
+bash
+Copy
+Edit
+sudo apt install python3
+Download the Script:
 
-            if any(area in url for area in sensitive_areas):
-                suspicious_ips[ip]['sensitive'] += 1
+You can create the Python script manually using any text editor (e.g., nano analyzer.py), or you can download a pre-written script from a repository.
 
-    # Display alerts
-    print("\n[!] Suspicious Activity Detected:\n")
-    for ip, actions in suspicious_ips.items():
-        if actions['404'] >= 5:
-            print(f"[404 ALERT] IP: {ip} — {actions['404']} times 404 errors")
-        if actions['sensitive'] > 0:
-            print(f"[Sensitive Access ALERT] IP: {ip} — {actions['sensitive']} attempts to sensitive areas")
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Simple Log Analyzer for Suspicious Activity")
-    parser.add_argument('--logfile', type=str, required=True, help='Path to Apache access.log file')
-    args = parser.parse_args()
-
-    analyze_log(args.logfile)
